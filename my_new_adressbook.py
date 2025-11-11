@@ -8,6 +8,9 @@ class Field:
     def __str__(self):
         return str(self.value)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}('{self.value}')"
+
 
 class Name(Field):
     def __init__(self, value):
@@ -37,21 +40,20 @@ class Record:
         return f"Phone {phone} added to contact {self.name.value}"
 
     def remove_phone(self, phone):
-        for p in self.phones:
-            if p.value == phone:
-                self.phones.remove(p)
-                return f"Phone {phone} removed from contact {self.name.value}"
+        phone_obj = self.find_phone(phone)
+        if phone_obj:
+            self.phones.remove(phone_obj)
+            return f"Phone {phone} removed from contact {self.name.value}"
         raise ValueError(f"Phone {phone} not found in contact {self.name.value}")
 
     def edit_phone(self, old_phone, new_phone):
         # Валідуємо новий телефон
         Phone(new_phone)
         
-        for p in self.phones:
-            if p.value == old_phone:
-                p.value = new_phone
-                message = f"Phone {old_phone} changed to {new_phone}"
-                return f"{message} for contact {self.name.value}"
+        phone_obj = self.find_phone(old_phone)
+        if phone_obj:
+            phone_obj.value = new_phone
+            return f"Phone {old_phone} changed to {new_phone} for contact {self.name.value}"
         raise ValueError(f"Phone {old_phone} not found in contact {self.name.value}")
 
     def find_phone(self, phone):
@@ -64,6 +66,9 @@ class Record:
         phones_str = '; '.join(p.value for p in self.phones)
         return f"Contact name: {self.name.value}, phones: {phones_str}"
 
+    def __repr__(self):
+        return f"Record('{self.name.value}')"
+
 
 class AddressBook(UserDict):
     def add_record(self, record):
@@ -73,15 +78,16 @@ class AddressBook(UserDict):
         return f"Contact {record.name.value} added successfully"
 
     def find(self, name):
-        if name in self.data:
-            return self.data[name]
-        return None
+        return self.data.get(name)
 
     def delete(self, name):
         if name in self.data:
             del self.data[name]
             return f"Contact {name} deleted successfully"
         raise ValueError(f"Contact {name} not found")
+
+    def __repr__(self):
+        return f"AddressBook({len(self.data)} contacts)"
 
 
 # Використовуємо згідно з технічним завданням
@@ -116,10 +122,10 @@ if __name__ == "__main__":
     # Пошук конкретного телефону в записі John
     found_phone = john.find_phone("5555555555")
     if found_phone:
-        print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
+        print(f"{john.name}: {found_phone}")  # Виведення: John: 5555555555
 
     # Видалення запису Jane
-    # book.delete("Jane")
+    #book.delete("Jane")
 
     # Перевірка всіх контактів після видалення
     for name, record in book.data.items():
